@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Tree Animation</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; color: #aaa; font-family: 'Segoe UI', sans-serif; }
+        #canvas-container { position: relative; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); border-radius: 4px; background: #1a1a1a; }
+        canvas { display: block; }
+        .controls { position: absolute; top: 20px; left: 20px; pointer-events: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; }
+        h1 { margin: 0; font-size: 1.2rem; color: #fff; }
+        p { margin: 5px 0 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h1>Fractal Tree</h1>
+        <p>Click to regrow.</p>
+    </div>
+    <div id="canvas-container"><canvas id="treeCanvas"></canvas></div>
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        const timeouts = [];
+        function resize() {
+            width = Math.min(window.innerWidth - 40, 800);
+            height = Math.min(window.innerHeight - 40, 600);
+            canvas.width = width;
+            canvas.height = height;
+            startTree();
+        }
+        function clearTimeouts() {
+            timeouts.forEach(t => clearTimeout(t));
+            timeouts.length = 0;
+        }
+        function drawBranch(x, y, len, angle, width, depth) {
+            const endX = x + len * Math.cos(angle);
+            const endY = y + len * Math.sin(angle);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(endX, endY);
+            let strokeColor;
+            if (len > 20) {
+                strokeColor = hsl(30, %, %);
+            } else {
+                strokeColor = hsl(, 80%, 70%);
+            }
+            ctx.lineWidth = width;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            if (len < 5) return;
+            const delay = 50 + Math.random() * 50; 
+            const t = setTimeout(() => {
+                const subAngle = 0.3 + Math.random() * 0.2;
+                const subLenScale = 0.7 + Math.random() * 0.1;
+                drawBranch(endX, endY, len * subLenScale, angle - subAngle, width * 0.7, depth + 1);
+                drawBranch(endX, endY, len * subLenScale, angle + subAngle, width * 0.7, depth + 1);
+            }, delay);
+            timeouts.push(t);
+        }
+        function startTree() {
+            clearTimeouts();
+            ctx.clearRect(0, 0, width, height);
+            drawBranch(width / 2, height, height / 4, -Math.PI / 2, 10, 0);
+        }
+        window.addEventListener('resize', resize);
+        window.addEventListener('click', startTree);
+        resize();
+    </script>
+</body>
+</html>
